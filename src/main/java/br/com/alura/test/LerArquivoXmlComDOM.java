@@ -1,36 +1,51 @@
 package br.com.alura.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import br.com.alura.model.Produto;
+
 public class LerArquivoXmlComDOM {
 
 	public static void main(String[] args) throws Exception {
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
-		factory.setValidating(true);
-		factory.setNamespaceAware(true);
-		factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
+	    List<Produto> produtos = new ArrayList<Produto>();
 
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		Document document = builder.parse("src/main/resources/venda.xml");
+	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	    DocumentBuilder builder = factory.newDocumentBuilder();
+	    Document document = builder.parse("src/venda.xml");
 
-		NodeList produtos = document.getElementsByTagName("produto");
+	    XPath xPath = XPathFactory.newInstance().newXPath();
 
-		for(int i =0; i < produtos.getLength(); i++) {
-		    Element produto = (Element) produtos.item(i);
-		    String nome = produto.getElementsByTagName("nome").item(0).getTextContent();
-		    String preco = produto.getElementsByTagName("preco").item(0).getTextContent();
+	    String expression = "/venda/produtos/produto[2]";
 
-		    System.out.println("-----------");
-		    System.out.println("Nome do produto: "+ nome);
-		    System.out.println("Preco do produto: "+ preco);
-		    System.out.println("-----------");
-		}
+	    XPathExpression xPathExpression = xPath.compile(expression);
+	    NodeList lista = (NodeList) xPathExpression.evaluate(document, XPathConstants.NODESET);
+
+	    for(int i = 0; i < lista.getLength();i++) {
+	        Element produto = (Element) lista.item(i);
+
+	        String nome = produto.getElementsByTagName("nome").item(0).getTextContent();
+	        Double preco = Double.parseDouble(produto.getElementsByTagName("preco").item(0).getTextContent());
+
+	        Produto prod = new Produto();
+	        prod.setNome(nome);
+	        prod.setPreco(preco);
+
+	        produtos.add(prod);
+	    }
+
+	    System.out.println(produtos);
 	}
-
 }
